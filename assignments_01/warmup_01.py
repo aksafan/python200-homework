@@ -213,18 +213,18 @@ else:
 # Run a paired t-test on the before/after scores below (the same students measured twice). Print the t-statistic and p-value.
 before = [60, 65, 70, 58, 62, 67, 63, 66]
 after  = [68, 70, 76, 65, 69, 72, 70, 71]
-t_stat, p_val  = stats.ttest_rel(group_a, group_b)
+t_stat, p_val  = stats.ttest_rel(before, after)
 print(f"Paired t-test. T-statistic: {t_stat}, P-value: {p_val}")
 
 # Hypothesis Question 4
 # Run a one-sample t-test to check whether the mean of scores is significantly different from a national benchmark of 70. Print the t-statistic and p-value.
 scores = [72, 68, 75, 70, 69, 74, 71, 73]
-t_stat, p_val  = stats.ttest_1samp(group_a, 70)
+t_stat, p_val  = stats.ttest_1samp(scores, 70)
 print(f"One-sample t-test. T-statistic: {t_stat}, P-value: {p_val}")
 
 # Hypothesis Question 5
 # Re-run the test from Q1 as a one-tailed test to check whether group_a scores are less than group_b scores. Print the resulting p-value. Use the alternative parameter.
-t_stat, p_val  = stats.ttest_ind(group_a, group_b, alternative='less')
+t_stat, p_val  = stats.ttest_ind(before, after, alternative='less')
 print(f"One-tailed t-test (whether group_a scores are less than group_b scores). T-statistic: {t_stat}, P-value: {p_val}")
 
 # Hypothesis Question 6
@@ -308,9 +308,9 @@ def create_series(arr):
     return pd.Series(arr, name="values")
 
 def clean_data(series):
-    series.dropna()
+    cleaned = series.dropna()
 
-    return series
+    return cleaned
 
 def summarize_data(series):
     return {
