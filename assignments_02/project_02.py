@@ -91,7 +91,7 @@ plt.close()
 # Task 3: Exploratory Data Analysis
 # Compute the Pearson correlation between each numeric feature and G3 on the filtered dataset,
 # and print them sorted from most negative to most positive.
-numeric_cols = [
+task3_numeric_feature_cols = [
     "age",
     "Medu",
     "Fedu",
@@ -102,12 +102,8 @@ numeric_cols = [
     "freetime",
     "goout",
     "Walc",
-    "G1",
-    "G2",
-    "G3",
 ]
-filtered_numeric_cols = [col for col in numeric_cols if col != "G3"]
-correlations = df_clean[filtered_numeric_cols].corrwith(df_clean["G3"]).sort_values()
+correlations = df_clean[task3_numeric_feature_cols].corrwith(df_clean["G3"]).sort_values()
 
 print("\nTask 3 - Pearson correlations with G3 and sorted from most negative to most positive:")
 print(correlations)
@@ -278,9 +274,10 @@ high_band_mae = abs(y_test_full[high_band] - y_pred_full[high_band]).mean() if h
 # In this plot, a point above the diagonal means actual grade > predicted (the model under-predicted).
 # A point below the diagonal means actual grade < predicted (the model over-predicted).
 # Compare low/high bands by MAE to judge whether errors are roughly uniform or worse at one end.
-print("\nTask 6 - Error by grade band (MAE):")
-print(f"Low-end MAE (actual <= 8): {low_band_mae:.3f}")
-print(f"High-end MAE (actual >= 14): {high_band_mae:.3f}")
+
+# Task 6 - Error by grade band (MAE):
+# Low-end MAE (actual <= 8): 3.892
+# High-end MAE (actual >= 14): 3.023
 
 # Then write a plain-language summary in your comments statements covering:
 # The size of the filtered dataset and the test set
@@ -291,21 +288,14 @@ coef_series = pd.Series(model.coef_, index=feature_cols)
 coef_sorted_desc = coef_series.sort_values(ascending=False)
 coef_sorted_asc = coef_series.sort_values()
 
-print("\nTask 6 - Plain-language summary:")
-print(f"Filtered dataset size: {df_clean.shape[0]} rows")
-print(f"Test set size: {X_test_full.shape[0]} rows")
-print(
-    f"Best model RMSE is {rmse_full:.3f}, so predictions are typically off by about {rmse_full:.1f} points on a 0-20 grade scale."
-)
-print(
-    f"Best model test R^2 is {test_r2_full:.3f}, so it explains about {test_r2_full * 100:.1f}% of the variation in final grades."
-)
-print(
-    f"Largest positive coefficients: {coef_sorted_desc.index[0]} ({coef_sorted_desc.iloc[0]:+.3f}) and {coef_sorted_desc.index[1]} ({coef_sorted_desc.iloc[1]:+.3f})."
-)
-print(
-    f"Largest negative coefficients: {coef_sorted_asc.index[0]} ({coef_sorted_asc.iloc[0]:+.3f}) and {coef_sorted_asc.index[1]} ({coef_sorted_asc.iloc[1]:+.3f})."
-)
+# Task 6 - Plain-language summary:
+# Filtered dataset size: 357 rows
+# Test set size: 72 rows
+# Best model RMSE is 2.855, so predictions are typically off by about 2.9 points on a 0-20 grade scale.
+# Best model test R^2 is 0.154, so it explains about 15.4% of the variation in final grades.
+# Largest positive coefficients: internet (+0.834) and higher (+0.610).
+# Largest negative coefficients: schoolsup (-2.062) and failures (-1.145).
+
 # One surprising result as I mentioned above is the strong negative coefficient for schoolsup
 # A possible explanation might be that if students received support they may already be struggling a lot with their studying
 
@@ -329,9 +319,9 @@ model_with_g1.fit(X_train_g1, y_train_g1)
 y_pred_g1 = model_with_g1.predict(X_test_g1)
 test_r2_with_g1 = r2_score(y_test_g1, y_pred_g1)
 
-print("\nNeglected Feature - Power of G1:")
-print(f"Test R^2 with G1 added: {test_r2_with_g1:.3f}")
-print(f"R^2 jump vs Task 5 model: {test_r2_with_g1 - test_r2_full:.3f}")
+# Neglected Feature - Power of G1:
+# Test R^2 with G1 added: 0.749
+# R^2 jump vs Task 5 model: 0.595
 
 # Add a comment addressing these questions: does a high R² here mean G1 is causing G3?
 # Is this a useful model for identifying students who might struggle?
