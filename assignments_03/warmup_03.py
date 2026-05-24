@@ -2,6 +2,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+from pathlib import Path
 
 from sklearn.datasets import load_iris, load_digits
 from sklearn.model_selection import train_test_split, cross_val_score
@@ -10,6 +11,7 @@ from sklearn.decomposition import PCA
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.multiclass import OneVsRestClassifier
 from sklearn.metrics import (
     accuracy_score,
     classification_report,
@@ -20,6 +22,8 @@ from sklearn.metrics import (
 iris = load_iris(as_frame=True)
 X = iris.data
 y = iris.target
+output_dir = Path(__file__).resolve().parent / "outputs"
+output_dir.mkdir(parents=True, exist_ok=True)
 
 # Preprocessing Question 1
 # Split X and y into training and test sets using an 80/20 split with stratify=y and random_state=42.
@@ -63,6 +67,7 @@ preds_scaled = knn_scaled.predict(X_test_scaled)
 
 print("Accuracy:", accuracy_score(y_test, preds_scaled))
 print(classification_report(y_test, preds_scaled))
+# Scaling improves KNN here because KNN uses distance, and standardization prevents larger-scale features from dominating nearest-neighbor comparisons
 
 # KNN Question 3
 # Using cross_val_score with cv=5, evaluate the k=5 KNN model on the unscaled training data.
@@ -108,10 +113,11 @@ disp = ConfusionMatrixDisplay(
     display_labels=iris.target_names
 )
 disp.plot()
-cm_file = f'outputs/knn_confusion_matrix.png'
+cm_file = output_dir / 'knn_confusion_matrix.png'
 plt.title("KNN Confusion Matrix (Iris)")
 plt.savefig(cm_file, dpi=150)
 plt.close()
+# The model most often confuses versicolor and virginica, while setosa is classified almost perfectly
 
 # --- The sklearn API: Decision Trees ---
 
@@ -132,16 +138,19 @@ print(classification_report(y_test, dtc_preds))
 # Logistic Regression Question 1
 # Train three logistic regression models on the scaled Iris data, identical in every way except for the C parameter: C=0.01, C=1.0, and C=100.
 # Use max_iter=1000 and solver='liblinear' for all three.
-log_reg_0_1 = LogisticRegression(C=0.01, max_iter=1000, solver="lbfgs") # I moved out from 'liblinear' cause of this error: ValueError: The 'liblinear' solver does not support multiclass classification (n_classes >= 3). Either use another solver or wrap the estimator in a OneVsRestClassifier to keep applying a one-versus-rest scheme.
-log_reg_1_0 = LogisticRegression(C=1.0, max_iter=1000, solver="lbfgs")
-log_reg_100 = LogisticRegression(C=100, max_iter=1000, solver="lbfgs")
+log_reg_0_1 = OneVsRestClassifier(LogisticRegression(C=0.01, max_iter=1000, solver="liblinear"))
+log_reg_1_0 = OneVsRestClassifier(LogisticRegression(C=1.0, max_iter=1000, solver="liblinear"))
+log_reg_100 = OneVsRestClassifier(LogisticRegression(C=100, max_iter=1000, solver="liblinear"))
 log_reg_0_1.fit(X_train_scaled, y_train)
 log_reg_1_0.fit(X_train_scaled, y_train)
 log_reg_100.fit(X_train_scaled, y_train)
 # For each model, print the C value and the total size of all coefficients using np.abs(model.coef_).sum().
-print("C=0.01, total coefficient magnitude:", np.abs(log_reg_0_1.coef_).sum())
-print("C=1.0, total coefficient magnitude:", np.abs(log_reg_1_0.coef_).sum())
-print("C=100, total coefficient magnitude:", np.abs(log_reg_100.coef_).sum())
+coef_0_01 = np.abs(np.vstack([est.coef_ for est in log_reg_0_1.estimators_])).sum()
+coef_1_0 = np.abs(np.vstack([est.coef_ for est in log_reg_1_0.estimators_])).sum()
+coef_100 = np.abs(np.vstack([est.coef_ for est in log_reg_100.estimators_])).sum()
+print("C=0.01, total coefficient magnitude:", coef_0_01)
+print("C=1.0, total coefficient magnitude:", coef_1_0)
+print("C=100, total coefficient magnitude:", coef_100)
 # Add a comment: what happens to the total coefficient magnitude as C increases? What does this tell you about what regularization is doing?
 # As C increases, the total coefficient magnitude grows (from 1.738029650758892 to 13.220936133674595 to 41.068106968999814
 # C is the opposite of regularization: a small C means a strong regularization
@@ -172,7 +181,7 @@ for digit in range(10):
     axes[digit].set_title(f"Digit {digit}")
     axes[digit].axis('off')
 plt.tight_layout()
-samp_digits_file = f'outputs/sample_digits.png'
+samp_digits_file = output_dir / 'sample_digits.png'
 plt.savefig(samp_digits_file, dpi=150)
 plt.close()
 
@@ -191,7 +200,7 @@ plt.ylabel('PC2')
 plt.title('PCA 2D Projection of Digits Dataset')
 # Save the figure to outputs/pca_2d_projection.png. Add a comment: do same-digit images tend to cluster together in this 2D space?
 plt.tight_layout()
-samp_digits_file = f'outputs/pca_2d_projection.png'
+samp_digits_file = output_dir / 'pca_2d_projection.png'
 plt.savefig(samp_digits_file, dpi=150)
 plt.close()
 # Add a comment: do same-digit images tend to cluster together in this 2D space?
@@ -208,7 +217,7 @@ plt.title('Cumulative Explained Variance by PCA Components')
 plt.grid()
 # Save to outputs/pca_variance_explained.png.
 plt.tight_layout()
-samp_digits_file = f'outputs/pca_variance_explained.png'
+samp_digits_file = output_dir / 'pca_variance_explained.png'
 plt.savefig(samp_digits_file, dpi=150)
 # Add a comment: approximately how many components do you need to explain 80% of the variance?
 # I needed approximately 12 components to explain 80% of the variance, as we can see from the plot
@@ -244,7 +253,7 @@ for row_idx, n in enumerate(n_values, start=1):
         axes[row_idx, col_idx].axis('off')
 plt.tight_layout()
 # Save to outputs/pca_reconstructions.png.
-samp_digits_file = f'outputs/pca_reconstructions.png'
+samp_digits_file = output_dir / 'pca_reconstructions.png'
 plt.savefig(samp_digits_file, dpi=150)
 # Add a comment: at what n do the digits become clearly recognizable, and does that match where the variance curve levels off?
 # At n=15, the digits become clearly recognizable
