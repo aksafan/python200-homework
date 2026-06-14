@@ -7,3 +7,5 @@ prefect
 scikit-learn
 gdown
 ipython
+dotenv
+openai
