@@ -9,3 +9,11 @@ gdown
 ipython
 dotenv
 openai
+pypdf
+llama-index-core==0.14.10
+llama-index-embeddings-openai
+llama-index-vector-stores-postgres
+llama-index-llms-openai
+llama-index-readers-file
+psycopg2-binary
+
