@@ -16,4 +16,4 @@ llama-index-vector-stores-postgres
 llama-index-llms-openai
 llama-index-readers-file
 psycopg2-binary
-
+smolagents
