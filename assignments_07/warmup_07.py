@@ -28,12 +28,17 @@ tools = [
     {
         'type': 'function',
         'function': {
-            'name': 'get_current_time',
-            'description': 'Returns the current local time as a string.',
+            'name': 'celsius_to_fahrenheit',
+            'description': 'Convert a Celsius temperature to Fahrenheit and return it as a formatted string.',
             'parameters': {
                 'type': 'object',
-                'properties': {},
-                'required': [],
+                'properties': {
+                    'celsius': {
+                        'type': 'number',
+                        'description': 'The temperature in degrees Celsius to convert to Fahrenheit.',
+                    },
+                },
+                'required': ['celsius'],
             },
         },
     }
